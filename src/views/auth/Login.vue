@@ -1,5 +1,6 @@
 <script setup lang="ts">
 import api from '@/lib/axios'
+import type { FormKitNode } from '@formkit/core'
 import { AxiosError } from 'axios'
 import { ref, reactive } from 'vue'
 
@@ -11,23 +12,23 @@ interface LoginForm {
     password: string
 }
 
-const form = reactive<LoginForm>({
-    email: '',
-    password: '',
-});
-const errors = reactive({
-    email: [],
-    password: [],
-})
+// const form = reactive<LoginForm>({
+//     email: '',
+//     password: '',
+// });
+// const errors = reactive({
+//     email: [],
+//     password: [],
+// })
 
-const login = async (form: LoginForm) => {
+const login = async (form: LoginForm, node?: FormKitNode) => {
     try {
         // Get CSRF cookie
         await api.get(`/sanctum/csrf-cookie`, {
             baseURL: import.meta.env.VITE_API_BASE_URL,
         })
-        errors.email = []
-        errors.password = []
+        // errors.email = []
+        // errors.password = []
         // Make registration request
         const response = await api.post(`/login`, form)
         
@@ -35,8 +36,9 @@ const login = async (form: LoginForm) => {
         console.log(response.data)
     } catch (err: any) {
         if(err instanceof AxiosError && err.response?.status === 422) {
-            errors.email = err.response.data.errors.email
-            errors.password = err.response.data.errors.password
+            // errors.email = err.response.data.errors.email
+            // errors.password = err.response.data.errors.password
+            node?.setErrors([], err.response?.data.errors)
         } else {
             error.value = err.response?.data?.message || 'Login failed'
         }
@@ -51,8 +53,15 @@ const login = async (form: LoginForm) => {
         
         <p v-if="error" class="text-red-500 mt-4 text-center">{{ error }}</p>
         <p v-if="success" class="text-green-500 mt-4 text-center">{{ success }}</p>
-      
-      <form @submit.prevent="login(form)">
+      <FormKit type="form" submit-label="Login" @submit="login">
+        <FormKit type="email" name="email" label="Email" validation="['required', 'email']"  />
+        <FormKit type="password" name="password" label="Password" validation="['required']"  />
+        <!-- <FormKit type="submit" class="w-full px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700 transition duration-200">
+          Login
+        </FormKit> -->
+      </FormKit>
+      <!-- using just form -->
+      <!-- <form @submit.prevent="login(form)">
         <div class="mb-4">
           <label for="email" class="block text-sm font-medium text-gray-700">Email</label>
           <input type="text" id="email" v-model="form.email" class="mt-1 block w-full p-3 border border-gray-300 rounded-md focus:outline-none focus:ring focus:ring-blue-500 text-gray-800" />
@@ -72,6 +81,6 @@ const login = async (form: LoginForm) => {
         <button type="submit" class="w-full px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700 transition duration-200">
           Login
         </button>
-      </form>
+      </form> -->
     </div>
 </template>
