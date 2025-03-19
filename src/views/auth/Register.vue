@@ -2,16 +2,13 @@
 import api from '@/lib/axios'
 import { AxiosError } from 'axios'
 import { ref, reactive } from 'vue'
+import type { RegisterForm } from '@/types'
+import router from '@/router'
+
 
 const error = ref('')
 const success = ref('')
 
-interface RegisterForm {
-    name: string
-    email: string
-    password: string
-    password_confirmation: string
-}
 
 const form = reactive<RegisterForm>({
     name: '',
@@ -43,6 +40,7 @@ const register = async (form: RegisterForm) => {
         form.email = ''
         form.password = ''
         form.password_confirmation = ''
+        router.push('/dashboard')
     } catch (err: any) {
         if(err instanceof AxiosError && err.response?.status === 422) {
             errors.name = err.response.data.errors.name

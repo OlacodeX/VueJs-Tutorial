@@ -3,41 +3,24 @@ import api from '@/lib/axios'
 import type { FormKitNode } from '@formkit/core'
 import { AxiosError } from 'axios'
 import { ref, reactive } from 'vue'
-
+import type { LoginForm } from '@/types'
+import router from '@/router'
 const error = ref('')
 const success = ref('')
 
-interface LoginForm {
-    email: string
-    password: string
-}
-
-// const form = reactive<LoginForm>({
-//     email: '',
-//     password: '',
-// });
-// const errors = reactive({
-//     email: [],
-//     password: [],
-// })
 
 const login = async (form: LoginForm, node?: FormKitNode) => {
     try {
-        // Get CSRF cookie
         await api.get(`/sanctum/csrf-cookie`, {
             baseURL: import.meta.env.VITE_API_BASE_URL,
         })
-        // errors.email = []
-        // errors.password = []
-        // Make registration request
         const response = await api.post(`/login`, form)
         
         success.value = 'Login successful!'
         console.log(response.data)
+        router.push('/dashboard')
     } catch (err: any) {
         if(err instanceof AxiosError && err.response?.status === 422) {
-            // errors.email = err.response.data.errors.email
-            // errors.password = err.response.data.errors.password
             node?.setErrors([], err.response?.data.errors)
         } else {
             error.value = err.response?.data?.message || 'Login failed'

@@ -1,11 +1,10 @@
 <script setup lang="ts">
 import api from '@/lib/axios';
 import { ref } from 'vue';
-
-const user = ref({
-  name: '',
-  email: '',
-});
+import type { User } from '@/types';
+import router from '@/router';
+// User can be of type user interface or null by default
+const user = ref<User | null>(null);
 
 const getUser = async () => {
   try {
@@ -19,10 +18,8 @@ const getUser = async () => {
 const logout = async () => {
   try {
     await api.post('/logout');
-    user.value = {
-      name: '',
-      email: '',
-    };
+    user.value = null;
+    router.push('/login');
   } catch (error) {
     console.error(error);
   }
