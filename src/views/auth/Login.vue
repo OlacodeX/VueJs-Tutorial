@@ -1,33 +1,8 @@
 <script setup lang="ts">
-import api from '@/lib/axios'
-import type { FormKitNode } from '@formkit/core'
-import { AxiosError } from 'axios'
-import { ref, reactive } from 'vue'
-import type { LoginForm } from '@/types'
-import router from '@/router'
-const error = ref('')
-const success = ref('')
+import { useAuthStore } from '@/store/auth'
 
+const { error, success, login } = useAuthStore()
 
-const login = async (form: LoginForm, node?: FormKitNode) => {
-    try {
-        await api.get(`/sanctum/csrf-cookie`, {
-            baseURL: import.meta.env.VITE_API_BASE_URL,
-        })
-        const response = await api.post(`/login`, form)
-        
-        success.value = 'Login successful!'
-        console.log(response.data)
-        router.push('/dashboard')
-    } catch (err: any) {
-        if(err instanceof AxiosError && err.response?.status === 422) {
-            node?.setErrors([], err.response?.data.errors)
-        } else {
-            error.value = err.response?.data?.message || 'Login failed'
-        }
-        console.error('Login error:', err)
-    }
-}
 </script>
 
 <template>
@@ -39,9 +14,6 @@ const login = async (form: LoginForm, node?: FormKitNode) => {
       <FormKit type="form" submit-label="Login" @submit="login">
         <FormKit type="email" name="email" label="Email" validation="['required', 'email']"  />
         <FormKit type="password" name="password" label="Password" validation="['required']"  />
-        <!-- <FormKit type="submit" class="w-full px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700 transition duration-200">
-          Login
-        </FormKit> -->
       </FormKit>
       <!-- using just form -->
       <!-- <form @submit.prevent="login(form)">

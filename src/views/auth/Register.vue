@@ -1,57 +1,9 @@
 <script setup lang="ts">
-import api from '@/lib/axios'
-import { AxiosError } from 'axios'
-import { ref, reactive } from 'vue'
-import type { RegisterForm } from '@/types'
-import router from '@/router'
+import { useAuthStore } from '@/store/auth'
+
+const { error, success, form, errors, register } = useAuthStore()
 
 
-const error = ref('')
-const success = ref('')
-
-
-const form = reactive<RegisterForm>({
-    name: '',
-    email: '',
-    password: '',
-    password_confirmation: '',
-});
-
-const errors = reactive({
-    name: [],
-    email: [],
-    password: [],
-})
-
-const register = async (form: RegisterForm) => {
-    try {
-        // Get CSRF cookie
-        await api.get(`/sanctum/csrf-cookie`, {
-            baseURL: import.meta.env.VITE_API_BASE_URL,
-        })
-        errors.name = []
-        errors.email = []
-        errors.password = []
-        // Make registration request
-        await api.post(`/register`, form)
-        
-        success.value = 'Registration successful!'
-        form.name = ''
-        form.email = ''
-        form.password = ''
-        form.password_confirmation = ''
-        router.push('/dashboard')
-    } catch (err: any) {
-        if(err instanceof AxiosError && err.response?.status === 422) {
-            errors.name = err.response.data.errors.name
-            errors.email = err.response.data.errors.email
-            errors.password = err.response.data.errors.password
-        } else {
-            error.value = err.response?.data?.message || 'Registration failed'
-        }
-        console.error('Registration error:', err)
-    }
-}
 </script>
 
 <template>
